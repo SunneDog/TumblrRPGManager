@@ -11,6 +11,6 @@ public class Main {
     public static void main(String[] args) {
         // write your code here
         ActivityChecker test = new ActivityChecker();
-        test.isActive("brokenrebel.tumblr.com");
+        test.activityCheck();
     }
 }

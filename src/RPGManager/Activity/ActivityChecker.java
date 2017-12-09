@@ -1,42 +1,99 @@
 package RPGManager.Activity;
 
-import com.tumblr.jumblr.JumblrClient;
 import RPGManager.Main;
+
+import com.tumblr.jumblr.JumblrClient;
+import com.tumblr.jumblr.types.Blog;
 import com.tumblr.jumblr.types.Post;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 import java.text.SimpleDateFormat;
-import java.text.ParseException;
 
 public class ActivityChecker {
     private JumblrClient client;
-    private SimpleDateFormat jumblrFormat;
-    private final int DAYSTILINACTIVE = 7;
+    private DateTimeFormatter jumblrFormat;
+    private static int DAYSTILINACTIVE = 7;
+    private ArrayList<Blog> checkedBlogs;
+    ArrayList<Integer> inactiveBlogIndeces;
 
     public ActivityChecker() {
         client = new JumblrClient(Main.OAUTHKEY, Main.OAUTHSECRET);
         client.setToken(Main.OAUTHTOKEN, Main.OAUTHTOKENSECRET);
-        jumblrFormat = new SimpleDateFormat("yyyy-MM-dd");
+        jumblrFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        checkedBlogs = new ArrayList<>();
+        inactiveBlogIndeces = new ArrayList<>();
+    }
+
+    // "main" method. run to do the full process
+    public void activityCheck() {
+        setCheckedBlogs();
+        System.out.println(printCheckedBlogs());
+
+        inactiveBlogIndeces.clear();
+        inactiveBlogIndeces.addAll(findInactiveBlogs());
+        System.out.println(printInactiveBlogs(inactiveBlogIndeces));
+    }
+
+    private void setCheckedBlogs() {
+        checkedBlogs.clear();
+
+        Map<String, Object> params = new HashMap<>();
+
+        for(int i = 0; i < 201; i += 21) {
+            params.put("offset", i);
+            checkedBlogs.addAll(client.userFollowing(params));
+        }
+    }
+
+    private String printCheckedBlogs() {
+        String result = "List of blogs being checked:\n";
+        for(Blog blog : checkedBlogs) {
+            result += blog.getName() + "\n";
+        }
+        result += "\n";
+        return result;
+    }
+
+    private ArrayList<Integer> findInactiveBlogs() {
+        ArrayList<Integer> result = new ArrayList<>();
+
+        for(Blog blog : checkedBlogs) {
+            if(!isActive(blog.getName())){
+                result.add(checkedBlogs.indexOf(blog));
+            }
+        }
+
+        return result;
+    }
+
+    private String printInactiveBlogs(ArrayList<Integer> inactiveBlogIndeces) {
+        String result = "The following blogs have not posted a new text post within the last "
+                            + DAYSTILINACTIVE + " days:\n";
+        for(Integer i : inactiveBlogIndeces) {
+            result += checkedBlogs.get(i).getName() + "\n";
+        }
+        result += "\n";
+        return result;
     }
 
     // Tumblr is considered inactive (false) if it has not posted in seven days.
     // Can be editted by changing DAYSTILINACTIVE
     public boolean isActive(String blogName) {
+        // returns false if inactive
         boolean result = false;
 
         Post latestPost = getPost(blogName);
-        Date postDate = new Date();
-        String gmtString = "";
+        LocalDate postDate = null;
 
-        postDate.equals(formatDate(latestPost, gmtString));
+        postDate = formatDate(latestPost);
 
         result = postedInDateRange(postDate);
 
-        System.out.println("isActive{" + result + "}");
+        System.out.println(blogName + " isActive{" + result + "}");
 
         return result;
     }
@@ -51,36 +108,24 @@ public class ActivityChecker {
         return posts.get(0);
     }
 
-    private Date formatDate(Post latestPost, String gmtString) {
-        Date result = new Date();
+    private LocalDate formatDate(Post latestPost) {
 
-        System.out.println(latestPost.getDateGMT());
-        gmtString = latestPost.getDateGMT();
-        gmtString = gmtString.substring(0, 10);
-        System.out.println(gmtString);
-
-        try {
-            result = jumblrFormat.parse(gmtString);
-        } catch(ParseException e) {
-            e.printStackTrace();
-            System.out.println("Error Parsing Date\nActivityChecker.java");
-        }
-
-        System.out.println("formatDate{" + result + "}");
+        String gmtString = latestPost.getDateGMT().substring(0, 10);
+        LocalDate result = LocalDate.parse(gmtString, jumblrFormat);
+        // System.out.println(result);
 
         return result;
     }
 
-    private boolean postedInDateRange(Date postDate) {
+    private boolean postedInDateRange(LocalDate postDate) {
         boolean result = false;
-        long DAY_IN_MS = 1000 * 60 * 60 * 24;
-        Date checkDate = new Date(System.currentTimeMillis() - (DAYSTILINACTIVE * DAY_IN_MS));
-
-        if(postDate.after(checkDate)) {
+        LocalDate today = LocalDate.now();
+        LocalDate checkDate = today.minus(DAYSTILINACTIVE, ChronoUnit.DAYS);
+        // check
+        if(postDate.isAfter(checkDate)) {
             result = true;
         }
-
-        System.out.println("postedInDateRange{" + result + "}");
+        //System.out.println("postedInDateRange{" + result + "}");
 
         return result;
     }
