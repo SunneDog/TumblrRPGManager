@@ -11,14 +11,12 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-import java.text.SimpleDateFormat;
-
 public class ActivityChecker {
     private JumblrClient client;
     private DateTimeFormatter jumblrFormat;
     private static int DAYSTILINACTIVE = 7;
     private ArrayList<Blog> checkedBlogs;
-    ArrayList<Integer> inactiveBlogIndeces;
+    private ArrayList<Integer> inactiveBlogIndeces;
 
     public ActivityChecker() {
         client = new JumblrClient(Main.OAUTHKEY, Main.OAUTHSECRET);
@@ -43,8 +41,8 @@ public class ActivityChecker {
 
         Map<String, Object> params = new HashMap<>();
 
-        for(int i = 0; i < 201; i += 21) {
-            params.put("offset", i);
+        for(int i = 0; i < 200; i += 20) {
+            params.put("offset", i + 1);
             checkedBlogs.addAll(client.userFollowing(params));
         }
     }
@@ -73,8 +71,8 @@ public class ActivityChecker {
     private String printInactiveBlogs(ArrayList<Integer> inactiveBlogIndeces) {
         String result = "The following blogs have not posted a new text post within the last "
                             + DAYSTILINACTIVE + " days:\n";
-        for(Integer i : inactiveBlogIndeces) {
-            result += checkedBlogs.get(i).getName() + "\n";
+        for(Blog i : getInactiveBlogs()) {
+            result += i.getName() + "\n";
         }
         result += "\n";
         return result;
@@ -127,6 +125,18 @@ public class ActivityChecker {
         }
         //System.out.println("postedInDateRange{" + result + "}");
 
+        return result;
+    }
+
+    /* Getters + Setters */
+    public ArrayList<Blog> getInactiveBlogs() {
+        ArrayList<Blog> result = new ArrayList<>();
+        int tick = 0;
+        for(Integer i : inactiveBlogIndeces) {
+            result.add(checkedBlogs.get(i));
+            System.out.println("Added inactive blog: " + result.get(tick).getName());
+            tick++;
+        }
         return result;
     }
 }
