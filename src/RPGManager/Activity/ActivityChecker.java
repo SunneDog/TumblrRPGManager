@@ -78,7 +78,7 @@ public class ActivityChecker {
         return result;
     }
 
-    // Tumblr is considered inactive (false) if it has not posted in seven days.
+    // Tumblr is considered inactive (false) if it has not posted in 6 days.
     // Can be editted by changing DAYSTILINACTIVE
     public boolean isActive(String blogName) {
         // returns false if inactive

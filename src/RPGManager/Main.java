@@ -10,8 +10,9 @@ public class Main {
 
     public static void main(String[] args) {
         // write your code here
-        ActivityChecker test = new ActivityChecker();
-        test.activityCheck();
-        PostMaker test2 = new PostMaker(test);
+        ActivityChecker checker = new ActivityChecker();
+        PostMaker poster = new PostMaker(checker);
+        checker.activityCheck();
+        poster.makePost();
     }
 }
