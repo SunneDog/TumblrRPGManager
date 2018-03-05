@@ -82,14 +82,18 @@ public class ActivityChecker {
     // Can be editted by changing DAYSTILINACTIVE
     public boolean isActive(String blogName) {
         // returns false if inactive
-        boolean result = false;
+        boolean result;
 
         Post latestPost = getPost(blogName);
-        LocalDate postDate = null;
+        LocalDate postDate;
 
-        postDate = formatDate(latestPost);
+        if(latestPost == null) {
+            result = false;
+        } else {
+            postDate = formatDate(latestPost);
 
-        result = postedInDateRange(postDate);
+            result = postedInDateRange(postDate);
+        }
 
         System.out.println(blogName + " isActive{" + result + "}");
 
@@ -97,13 +101,17 @@ public class ActivityChecker {
     }
 
     private Post getPost(String blogName) {
+        Post post;
         Map<String, Object> params = new HashMap<>();
         params.put("type", "text");
         params.put("limit", 1);
-        params.put("filter", "text");
-        List<Post> posts = client.blogPosts(blogName, params);
-
-        return posts.get(0);
+        try {
+            post = client.blogPosts(blogName, params).get(0);
+        } catch(IndexOutOfBoundsException a) {
+            System.out.println("No posts found for " + blogName);
+            return null;
+        }
+        return post;
     }
 
     private LocalDate formatDate(Post latestPost) {

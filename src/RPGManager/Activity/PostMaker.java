@@ -29,9 +29,9 @@ public class PostMaker {
 
         Map<String, String> detail = new HashMap();
         detail.put("type", "photo");
-        detail.put("format", "html");
+        detail.put("filter", "html");
         detail.put("state", "draft");
-        detail.put("photos", "https://78.media.tumblr.com/0528adf0de085afa5e8b31cc58301b11/tumblr_nh8pd9UUMs1u6qecyo2_r1_500.gif");
+        detail.put("source", "https://78.media.tumblr.com/0528adf0de085afa5e8b31cc58301b11/tumblr_nh8pd9UUMs1u6qecyo2_r1_500.gif");
         detail.put("caption", this.postBody);
 
         try {
@@ -54,8 +54,8 @@ public class PostMaker {
         postBody += "<b>MAKE SURE TO CHECK EVERY URL ON THIS LIST AND REMOVE ANY THAT ARE"
                     + " NOT ACTUALLY VIOLATING ACTIVITY RULES.</b>";
         postBody += "<br><br>";
-        postBody += "The following player(s) are over six days of inactivity,"
-                    + " please make a post to the dash within 48 hours or contact the main for a hiatus.<br><br>";
+        postBody += "Hello! It looks like you've gone six days without making an RP post. You will be unfollowed in "
+        + "48 hours unless you make a new post, or request a hiatus.";
 
         postBody += "<blockquote><b>";
         for(int i = 0; i < checker.getInactiveBlogs().size(); i++) {
